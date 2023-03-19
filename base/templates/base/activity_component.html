@@ -1,5 +1,6 @@
-<h3>Журнал действий</h3>
-        <hr>
+<nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-center">
+    <a class="navbar-brand" >Журнал действий</a>
+</nav>
         {% for message in room_messages %}
         <div>
             <small><a href="{% url 'user-profile' message.user.id%}">@{{message.user}}</a> {{message.created|timesince}}</small>

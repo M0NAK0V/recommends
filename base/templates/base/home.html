@@ -14,7 +14,9 @@
     </div>
 
     <div>
-        <h5>{{room_count}} тредов</h5>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-center">
+            <a class="navbar-brand" >{{room_count}} тредов</a>
+        </nav>
         <a href="{% url 'create-room'%}">Создать тред</a>    
         {%include 'base/feed_component.html'%}
     </div>

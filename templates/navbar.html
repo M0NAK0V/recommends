@@ -1,13 +1,20 @@
-<a href="/">
-    <h1>КУРСАЧ</h1>
-</a>
-<form class="header__search" method="GET" action="{% url 'home' %}">
-    <input type = "text" name="q" placeholder="Поиск..."/>
+<nav class="navbar navbar-expand navbar-dark bg-dark justify-content-center"">
+<a class="navbar-brand"  href="/">КУРСАЧ</a>
+    <ul class="navbar-nav mr-auto">
+        {% if request.user.is_authenticated %}
+        <li class="nav-item">
+           <a class="nav-link"> Hello {{request.user}}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{%url 'logout'%}">Logout</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+        </li>
+        {% endif %}
+    </ul>
+<form class="header__search form-inline my-2 my-lg-0" method="GET" action="{% url 'home' %}">
+     <input class="form-control mr-sm-2" type = "text" name="q" placeholder="Search" aria-label="Search">
 </form>
-{% if request.user.is_authenticated %}
-<p>Hello {{request.user}}</p>
-<a href="{%url 'logout'%}">Logout</a>
-{% else %}
-<a href="{% url 'login' %}">Login</a>
-{% endif %}
-<hr>
+</nav>
