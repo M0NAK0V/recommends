@@ -6,9 +6,38 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm 
-from .models import Room, Topic, Message
-from .forms import RoomForm
+from .models import Room, Topic, Message, Achievement, UserAchievement
+from .forms import RoomForm, AchievementForm, AchievementAdd
+from django.views.generic import ListView
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import UserPassesTestMixin
 
+
+class AchievementList(ListView):
+    model = Achievement
+    template_name = 'achievements/list.html'
+    context_object_name = 'achievements'
+
+
+
+class AchievementCreate(UserPassesTestMixin,CreateView):
+    model = Achievement
+    form_class = AchievementForm
+    template_name = 'achievements/form.html'
+    success_url = reverse_lazy('achievements-list')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+    
+class AchievementAdd(UserPassesTestMixin,CreateView):
+    model = UserAchievement
+    form_class = AchievementAdd
+    template_name = 'achievements/form2.html'
+    success_url = reverse_lazy('achievements-list')
+
+    def test_func(self):
+        return self.request.user.is_superuser
 
 # rooms = [
 #    {'id': 1, 'name': 'Name1'},
@@ -92,7 +121,8 @@ def userProfile(request, pk):
     rooms = user.room_set.all()
     room_messages = user.message_set.all()
     topics = Topic.objects.all()
-    context = {'user':user,'rooms':rooms,'room_messages':room_messages,'topics' : topics}
+    user_achievements = UserAchievement.objects.filter(user=request.user)
+    context = {'user':user,'rooms':rooms,'room_messages':room_messages,'topics' : topics, 'user_achievements': user_achievements}
     return render(request, 'base/profile.html', context)
 
 @login_required(login_url='/login')

@@ -37,3 +37,18 @@ class Message(models.Model):
     def __str__(self):
         return self.body[0:50]
     
+
+class Achievement(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='achievements/')
+    def __str__(self):
+        return self.name
+    
+class UserAchievement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
+    date_achieved = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username + ' - ' + self.achievement.name

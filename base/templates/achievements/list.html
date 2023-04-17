@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div class="container">
+    <h1>Достижения</h1>
+    {% for achievement in achievements %}
+        <div class="achievement">
+            <h2>{{ achievement.name }}</h2>
+            <img src="{{ achievement.image.url }}" width="150" height="150" alt="{{ achievement.name }}">
+            <p>{{ achievement.description }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
