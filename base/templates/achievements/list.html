@@ -1,16 +1,37 @@
 {% extends 'main.html' %}
 
 {% block content %}
-
-<div class="container">
-    <h1>Достижения</h1>
+  <h1>Achievement List</h1>
+  <ul>
     {% for achievement in achievements %}
-        <div class="achievement">
-            <h2>{{ achievement.name }}</h2>
-            <img src="{{ achievement.image.url }}" width="150" height="150" alt="{{ achievement.name }}">
-            <p>{{ achievement.description }}</p>
-        </div>
+      <li>{{ achievement.name }} - Progress: {{ achievement.progress }}%</li>
+      <img src="{{ achievement.image.url }}" width="150" height="150" alt="{{ achievement.name }}">
+      <p>{{ achievement.description }}</p>
+      {% if courses %}
+        <ul>
+          {% for course in courses %}
+            <li>
+              <form method="post" action="{% url 'update_achievement_progress' achievement.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="course" value="{{ course.id }}">
+                <label for="progress">{{ course.name }} progress:</label>
+                <input type="number" name="progress" value="{{ course.progress }}" min="0" max="100">
+                <button type="submit">Update progress</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% empty %}
+      <li>No achievements found.</li>
     {% endfor %}
-</div>
-
+  </ul>
+  <h1>Course List</h1>
+  <ul>
+    {% for course in courses %}
+      <li>{{ course.name }} - Created: {{ course.created_date }} - Completed: {{ course.completion_date }}</li>
+    {% empty %}
+      <li>No courses found.</li>
+    {% endfor %}
+  </ul>
 {% endblock %}

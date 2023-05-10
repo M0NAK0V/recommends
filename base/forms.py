@@ -1,7 +1,5 @@
 from django.forms import ModelForm
-from .models import Room
-from .models import Achievement
-from .models import UserAchievement
+from .models import Room, Achievement, UserAchievement, Course
 
 class RoomForm(ModelForm):
     class Meta:
@@ -18,3 +16,9 @@ class AchievementAdd(ModelForm):
     class Meta:
         model = UserAchievement
         fields = ['user', 'achievement']
+
+class CourseForm(ModelForm):
+    class Meta:
+        model = Course
+        fields = '__all__'
+        exclude = ['completion_date','progress']

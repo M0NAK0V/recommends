@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm 
-from .models import Room, Topic, Message, Achievement, UserAchievement
-from .forms import RoomForm, AchievementForm, AchievementAdd
+from .models import Room, Topic, Message, Achievement, UserAchievement, Course
+from .forms import RoomForm, AchievementForm, AchievementAdd, CourseForm
 from django.views.generic import ListView
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
@@ -18,6 +18,11 @@ class AchievementList(ListView):
     model = Achievement
     template_name = 'achievements/list.html'
     context_object_name = 'achievements'
+
+class CourseList(ListView):
+    model = Course
+    template_name = 'achievements/courses_list.html'
+    context_object_name = 'courses'
 
 
 
@@ -38,6 +43,31 @@ class AchievementAdd(UserPassesTestMixin,CreateView):
 
     def test_func(self):
         return self.request.user.is_superuser
+    
+def create_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.save()
+            messages.success(request, 'Course created successfully!')
+            return redirect('courses-list')
+    else:
+        form = CourseForm()
+    return render(request, 'achievements/create_course.html', {'form': form})
+
+def update_achievement_progress(request, achievement_id):
+    achievement = get_object_or_404(Achievement, id=achievement_id)
+    course_id = request.POST.get('course')
+    if course_id:
+        course = get_object_or_404(Course, id=course_id)
+        progress = request.POST.get('progress', 0)
+        course.progress = progress
+        course.save()
+        achievement.progress = course.achievements.filter(id=achievement.id).count() / course.achievements.count() * 100
+        achievement.save()
+        messages.success(request, 'Achievement progress updated successfully!')
+    return redirect('achievement_list')
 
 # rooms = [
 #    {'id': 1, 'name': 'Name1'},

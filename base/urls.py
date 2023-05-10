@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import AchievementList, AchievementCreate, AchievementAdd
+from .views import AchievementList, AchievementCreate, AchievementAdd, CourseList
 
 urlpatterns = [
     path('login/', views.loginPage, name= "login"),
@@ -18,4 +18,6 @@ urlpatterns = [
     path('achievements/', AchievementList.as_view(), name='achievements-list'),
     path('achievements/create/', AchievementCreate.as_view(), name='achievements-create'),
     path('achievements/add/', AchievementAdd.as_view(), name='achievements-add'),
+    path('course/create',views.create_course, name='courses-create'),
+    path('courses/', CourseList.as_view(), name='courses-list'),
 ]

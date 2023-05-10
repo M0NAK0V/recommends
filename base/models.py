@@ -36,12 +36,20 @@ class Message(models.Model):
     
     def __str__(self):
         return self.body[0:50]
-    
+
+class Course(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=255, default='')
+    created_date = models.DateField(auto_now_add=True)
+    completion_date = models.DateField(null=True, blank=True)
+    progress = models.IntegerField(default=0) 
 
 class Achievement(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='achievements/')
+    progress = models.IntegerField(default=0)
+    courses = models.ManyToManyField(Course, related_name='achievements')
     def __str__(self):
         return self.name
     
@@ -52,3 +60,4 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return self.user.username + ' - ' + self.achievement.name
+    
