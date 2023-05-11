@@ -6,44 +6,38 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm 
-from .models import Room, Topic, Message, Achievement, UserAchievement, Course
-from .forms import RoomForm, AchievementForm, AchievementAdd, CourseForm
+from .models import Room, Topic, Message, Achievement, Course, Question
+from .forms import RoomForm, CourseForm
 from django.views.generic import ListView
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin
 
 
-class AchievementList(ListView):
-    model = Achievement
-    template_name = 'achievements/list.html'
-    context_object_name = 'achievements'
 
-class CourseList(ListView):
-    model = Course
-    template_name = 'achievements/courses_list.html'
-    context_object_name = 'courses'
-
-
-
-class AchievementCreate(UserPassesTestMixin,CreateView):
-    model = Achievement
-    form_class = AchievementForm
-    template_name = 'achievements/form.html'
-    success_url = reverse_lazy('achievements-list')
-
-    def test_func(self):
-        return self.request.user.is_superuser
     
-class AchievementAdd(UserPassesTestMixin,CreateView):
-    model = UserAchievement
-    form_class = AchievementAdd
-    template_name = 'achievements/form2.html'
-    success_url = reverse_lazy('achievements-list')
+# class AchievementAdd(UserPassesTestMixin,CreateView):
+#     model = UserAchievement
+#     form_class = AchievementAdd
+#     template_name = 'achievements/form2.html'
+#     success_url = reverse_lazy('achievements-list')
 
-    def test_func(self):
-        return self.request.user.is_superuser
+#     def test_func(self):
+#         return self.request.user.is_superuser
     
+
+def course(request, pk):
+    course = Course.objects.get(id=pk)
+    questions = Question.objects.filter(course=course)
+    context = {'course': course, 'questions': questions}
+    return render(request, 'courses/course.html', context)
+
+def courses(request):
+    courses = Course.objects.all()
+    context = {'courses': courses}
+    return render(request, 'courses/courses.html', context)
+
+@login_required
 def create_course(request):
     if request.method == 'POST':
         form = CourseForm(request.POST)
@@ -51,30 +45,46 @@ def create_course(request):
             course = form.save(commit=False)
             course.save()
             messages.success(request, 'Course created successfully!')
-            return redirect('courses-list')
+            return redirect('courses')
     else:
         form = CourseForm()
-    return render(request, 'achievements/create_course.html', {'form': form})
+    return render(request, 'courses/create_course.html', {'form': form})
 
-def update_achievement_progress(request, achievement_id):
-    achievement = get_object_or_404(Achievement, id=achievement_id)
-    course_id = request.POST.get('course')
-    if course_id:
-        course = get_object_or_404(Course, id=course_id)
-        progress = request.POST.get('progress', 0)
-        course.progress = progress
-        course.save()
-        achievement.progress = course.achievements.filter(id=achievement.id).count() / course.achievements.count() * 100
-        achievement.save()
-        messages.success(request, 'Achievement progress updated successfully!')
-    return redirect('achievement_list')
+@login_required
+def add_question(request, pk):
+    course = Course.objects.get(id=pk)
+    if request.user != course.host:
+        return HttpResponse('ухади')
+    if request.method == 'POST':
+        name = request.POST['name']
+        vopros = request.POST['vopros']
+        otvet = request.POST['otvet']
+        Question.objects.create(user=request.user, course=course, name=name, vopros=vopros, otvet=otvet)
+        messages.success(request, 'Your question has been submitted.')
+        return redirect('courses')
+    return render(request, 'courses/add_question.html', {'course': course})
 
-# rooms = [
-#    {'id': 1, 'name': 'Name1'},
-#    {'id': 2, 'name': 'Name2'},
-#    {'id': 3, 'name': 'Name3'},
-# ]
-# Create your views here.
+
+@login_required
+def course_questions(request, pk):
+    course = Course.objects.get(id=pk)
+    questions = Question.objects.filter(course=course)
+    return render(request, 'courses/course_questions.html', {'course': course, 'questions': questions})
+
+    
+# def update_achievement_progress(request, achievement_id):
+#     achievement = get_object_or_404(Achievement, id=achievement_id)
+#     course_id = request.POST.get('course')
+#     if course_id:
+#         course = get_object_or_404(Course, id=course_id)
+#         progress = request.POST.get('progress', 0)
+#         course.progress = progress
+#         course.save()
+#         achievement.progress = course.achievements.filter(id=achievement.id).count() / course.achievements.count() * 100
+#         achievement.save()
+#         messages.success(request, 'Achievement progress updated successfully!')
+#     return redirect('achievement_list')
+
 def loginPage(request):
     page = 'login'
     if request.user.is_authenticated:
@@ -123,6 +133,11 @@ def home(request):
                                 Q(name__icontains=q)|
                                 Q(description__icontains=q)
                                 )
+    courses = Course.objects.filter(
+                                Q(topic__name__icontains=q) |
+                                Q(name__icontains=q)|
+                                Q(description__icontains=q)
+                                )
     topics = Topic.objects.all()
     room_count = rooms.count()
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
@@ -151,8 +166,8 @@ def userProfile(request, pk):
     rooms = user.room_set.all()
     room_messages = user.message_set.all()
     topics = Topic.objects.all()
-    user_achievements = UserAchievement.objects.filter(user=request.user)
-    context = {'user':user,'rooms':rooms,'room_messages':room_messages,'topics' : topics, 'user_achievements': user_achievements}
+    # user_achievements = UserAchievement.objects.filter(user=request.user)
+    context = {'user':user,'rooms':rooms,'room_messages':room_messages,'topics' : topics}
     return render(request, 'base/profile.html', context)
 
 @login_required(login_url='/login')

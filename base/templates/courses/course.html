@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>{{ course.name }}</h1>
+  <p>{{ course.description }}</p>
+  <h2>Questions</h2>
+  {% for question in questions %}
+    <div class="question-card">
+      <h3>{{ question.name }}</h3>
+      <p>{{ question.vopros }}</p>
+      <p><em>Answer: {{ question.otvet }}</em></p>
+    </div>
+
+  {% endfor %}
+  <a href="{% url 'add_question' course.id %}">Add a Question</a>
+  <a href="{% url 'course_questions' course.id %}">View Questions</a>
+{% endblock %}

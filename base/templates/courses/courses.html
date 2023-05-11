@@ -1,0 +1,18 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>Courses</h1>
+  {% for course in courses %}
+    <div class="course-card">
+      <h2>{{ course.name }}</h2>
+      <p>Hosted by: {{ course.host}}</p>
+      <p>Topic: {{ course.topic.name }}</p>
+      <p>Description: {{ course.description }}</p>
+      <p>Participants: {{ course.participants.count }}</p>
+      {% if course.completion_date %}
+        <p>Completion Date: {{ course.completion_date }}</p>
+      {% endif %}
+      <a href="{% url 'course' course.id %}">View Course</a>
+    </div>
+  {% endfor %}
+{% endblock %}

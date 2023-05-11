@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>{{ course.name }} Questions</h1>
+  {% for question in questions %}
+    <div class="question-card">
+      <h3>{{ question.name }}</h3>
+      <p>{{ question.vopros }}</p>
+      <p><em>Answer: {{ question.otvet }}</em></p>
+    </div>
+  {% empty %}
+    <p>No questions yet.</p>
+  {% endfor %}
+{% endblock %}

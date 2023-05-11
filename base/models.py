@@ -37,27 +37,34 @@ class Message(models.Model):
     def __str__(self):
         return self.body[0:50]
 
-class Course(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(max_length=255, default='')
-    created_date = models.DateField(auto_now_add=True)
-    completion_date = models.DateField(null=True, blank=True)
-    progress = models.IntegerField(default=0) 
-
 class Achievement(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='achievements/')
     progress = models.IntegerField(default=0)
-    courses = models.ManyToManyField(Course, related_name='achievements')
+    achieved = models.ManyToManyField(User, related_name='achieved')
     def __str__(self):
         return self.name
-    
-class UserAchievement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    date_achieved = models.DateField(auto_now_add=True)
 
+class Course(models.Model):
+    host = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
+    name = models.CharField(max_length=100)
+    topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null = True)
+    description = models.TextField(max_length=255, default='')
+    created_date = models.DateField(auto_now_add=True)
+    completion_date = models.DateField(null=True, blank=True)
+    # achievement = models.ManyToManyField(Achievement, related_name='achievements')
+    # participants = models.ManyToManyField(User, related_name='participants',blank = True)
+    progress = models.IntegerField(default=0) 
     def __str__(self):
-        return self.user.username + ' - ' + self.achievement.name
-    
+        return self.name
+
+class Question(models.Model):
+    user= models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete= models.CASCADE)
+    name = models.CharField(max_length=100)
+    vopros = models.TextField()
+    otvet = models.TextField()
+    def __str__(self):
+        return self.name
+
