@@ -1,0 +1,24 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>Решите курс "{{ course.name }}"</h1>
+  {% if success %}
+    <p class="alert alert-success">{{ success }}</p>
+  {% endif %}
+  {% if error %}
+    <p class="alert alert-danger">{{ error }}</p>
+  {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    {% for question in questions %}
+      <h3>{{ question.vopros }}</h3>
+      <ul>
+        {% for answer in question.answers %}
+            <input type="radio" name="question_{{ question.id }}_answer" id="question_{{ question.id }}_answer_{{ forloop.counter }}" value="{{ answer.id }}">
+            <label for="question_{{ question.id }}_answer_{{ forloop.counter }}">{{ answer.text }}</label><br>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Отправить ответы</button>
+  </form>
+{% endblock %}

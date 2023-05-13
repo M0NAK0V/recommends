@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>{{ course.name }} - Solve Course</h1>
+  <p>{{ course.description }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {% for question in questions %}
+      <h3>{{ question.text }}</h3>
+
+      {% if question.question_type == "radio" %}
+        {% for option in question.options.all %}
+          <input type="radio" name="answer_{{ question.id }}" value="{{ option.id }}"> {{ option.text }} <br>
+        {% endfor %}
+      {% elif question.question_type == "checkbox" %}
+        {% for option in question.options.all %}
+          <input type="checkbox" name="answer_{{ question.id }}[]" value="{{ option.id }}"> {{ option.text }} <br>
+        {% endfor %}
+      {% else %}
+        <input type="text" name="answer_{{ question.id }}"> <br>
+      {% endif %}
+    {% endfor %}
+
+    <input type="submit" value="Submit">
+  </form>
+{% endblock %}

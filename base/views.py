@@ -1,17 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm 
-from .models import Room, Topic, Message, Achievement, Course, Question
-from .forms import RoomForm, CourseForm
+from .models import Room, Topic, Message, Achievement, Course, Question, CourseResult
+from .forms import RoomForm, CourseForm, QuestionForm
 from django.views.generic import ListView
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.urls import reverse
 
 
 
@@ -53,16 +54,20 @@ def create_course(request):
 @login_required
 def add_question(request, pk):
     course = Course.objects.get(id=pk)
-    if request.user != course.host:
-        return HttpResponse('ухади')
     if request.method == 'POST':
-        name = request.POST['name']
-        vopros = request.POST['vopros']
-        otvet = request.POST['otvet']
-        Question.objects.create(user=request.user, course=course, name=name, vopros=vopros, otvet=otvet)
-        messages.success(request, 'Your question has been submitted.')
-        return redirect('courses')
-    return render(request, 'courses/add_question.html', {'course': course})
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.course = course  # set the course for the question
+            question.save()
+            form.save_m2m()
+    else:
+        form = QuestionForm()
+    context = {
+        'course': course,
+        'form': form,
+    }
+    return render(request, 'courses/add_question.html', context)
 
 
 @login_required
@@ -70,6 +75,61 @@ def course_questions(request, pk):
     course = Course.objects.get(id=pk)
     questions = Question.objects.filter(course=course)
     return render(request, 'courses/course_questions.html', {'course': course, 'questions': questions})
+
+@login_required
+def course_solve(request, pk):
+    course = Course.objects.get(id=pk)
+    questions = Question.objects.filter(course=course)
+
+    if request.method == 'POST':
+        score = 0
+
+        for question in questions:
+            answer = request.POST.get('answer_{}'.format(question.id))
+
+            if question.question_type == "text":
+                if answer.lower() == question.answer.lower():
+                    score += question.points
+            else:
+                answers = request.POST.getlist('answer_{}[]'.format(question.id))
+                correct_options = question.options.filter(is_correct=True)
+                correct_option_ids = [option.id for option in correct_options]
+                answers_ids = [int(id) for id in answers]
+
+                if set(correct_option_ids) == set(answers_ids):
+                    score += question.points
+
+        CourseResult.objects.create(user=request.user, course=course, score=score)
+
+        return HttpResponseRedirect(reverse('course_solve', args=[course.id]))
+
+    return render(request, 'courses/course_solve.html', {'course': course, 'questions': questions})
+
+# @login_required
+# def answers(request, pk):
+#     course = Course.objects.get(id=pk)
+#     questions = course.question_set.all()
+#     answers = {}
+#     if request.method == 'POST':
+#         for question in questions:
+#             answer = request.POST.get(f'question_{question.id}')
+#             if answer:
+#                 answers[question.id] = answer.strip()
+#     context = {
+#         'course': course,
+#         'questions': questions,
+#         'answers': answers,
+#     }
+#     if request.method == 'POST':
+#         correct_answers = {}
+#         for question in questions:
+#             correct_answers[question.id] = question.otvet
+#         if answers == correct_answers:
+#             context['success'] = 'Вы успешно решили курс!'
+#         else:
+#             context['error'] = 'Вы допустили ошибку в решении курса'
+#     return render(request, 'courses/answers.html', context)
+
 
     
 # def update_achievement_progress(request, achievement_id):

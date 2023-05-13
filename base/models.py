@@ -53,18 +53,40 @@ class Course(models.Model):
     description = models.TextField(max_length=255, default='')
     created_date = models.DateField(auto_now_add=True)
     completion_date = models.DateField(null=True, blank=True)
-    # achievement = models.ManyToManyField(Achievement, related_name='achievements')
-    # participants = models.ManyToManyField(User, related_name='participants',blank = True)
     progress = models.IntegerField(default=0) 
     def __str__(self):
         return self.name
+
 
 class Question(models.Model):
     user= models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete= models.CASCADE)
     name = models.CharField(max_length=100)
-    vopros = models.TextField()
-    otvet = models.TextField()
+    vopros = models.TextField(default='')
+    otvet = models.TextField(default='')
+    question_type = models.CharField(max_length=100, default='')
+    options = models.ManyToManyField('Option')
+    points = models.IntegerField(default=1)
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        super(Question, self).save(*args, **kwargs)
+        self.options.clear()
+        for option in self.options.all():
+            self.options.add(option)
+    
+class Option(models.Model):
+    text = models.CharField(max_length=100)
+    is_correct = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.text
+    
+class CourseResult(models.Model):
+    user= models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete= models.CASCADE)
+    score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.user

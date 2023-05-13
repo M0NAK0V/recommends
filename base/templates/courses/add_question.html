@@ -1,15 +1,10 @@
 {% extends 'main.html' %}
-
 {% block content %}
-  <h1>Add a Question to {{ course.name }}</h1>
-  <form method="POST">
+<h1>Добавить вопрос к курсу</h1>
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <label for="name">Name:</label>
-    <input type="text" name="name"><br><br>
-    <label for="vopros">Question:</label>
-    <textarea name="vopros"></textarea><br><br>
-    <label for="otvet">Answer:</label>
-    <textarea name="otvet"></textarea><br><br>
-    <button type="submit">Submit</button>
-  </form>
+    {{ form.as_p }}
+    <button type="submit">Добавить</button>
+</form>
+</div>
 {% endblock %}

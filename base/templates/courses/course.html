@@ -12,6 +12,11 @@
     </div>
 
   {% endfor %}
+  {% if user.is_authenticated %}
   <a href="{% url 'add_question' course.id %}">Add a Question</a>
   <a href="{% url 'course_questions' course.id %}">View Questions</a>
+  {% comment %} <li class="nav-item">
+    <a class="nav-link" href="{% url 'answers' course.id %}">Задания курса</a>
+  </li> {% endcomment %}
+ {% endif %}
 {% endblock %}
