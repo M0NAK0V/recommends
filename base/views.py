@@ -92,11 +92,11 @@ def course_solve(request, pk):
                     score += question.points
             else:
                 answers = request.POST.getlist('answer_{}[]'.format(question.id))
-                correct_options = question.options.filter(is_correct=True)
-                correct_option_ids = [option.id for option in correct_options]
+                correct_tests = question.test.filter(is_correct=True)
+                correct_test_ids = [test.id for test in correct_tests]
                 answers_ids = [int(id) for id in answers]
 
-                if set(correct_option_ids) == set(answers_ids):
+                if set(correct_test_ids) == set(answers_ids):
                     score += question.points
 
         CourseResult.objects.create(user=request.user, course=course, score=score)

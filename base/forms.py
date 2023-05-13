@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Room, Achievement, Course, Question, Option
+from .models import Room, Achievement, Course, Question
 
 class RoomForm(ModelForm):
     class Meta:
@@ -16,8 +16,6 @@ class CourseForm(ModelForm):
         exclude = ['completion_date','progress']
 
 class QuestionForm(forms.ModelForm):
-    options = forms.ModelMultipleChoiceField(queryset=Option.objects.none())
-
     class Meta:
         model = Question
         fields = '__all__'
@@ -27,9 +25,8 @@ class QuestionForm(forms.ModelForm):
 
         if self.instance.question_type == 'text':
             del self.fields['options']
-        else:
-            self.fields['options'].queryset = Option.objects.filter(question=self.instance)
 
-        if self.instance.pk:
-            self.fields['options'].queryset = self.instance.options.all()
-            self.fields['options'].widget = forms.CheckboxSelectMultiple() if self.instance.question_type == 'checkbox' else forms.RadioSelect()
+        if self.instance.question_type == 'checkbox':
+            self.fields['options'].widget = forms.CheckboxSelectMultiple()
+        else:
+            forms.RadioSelect()

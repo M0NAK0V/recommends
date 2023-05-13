@@ -57,6 +57,8 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
+class Test(models.Model):
+    text = models.TextField(null=True)
 
 class Question(models.Model):
     user= models.ForeignKey(User, on_delete=models.CASCADE)
@@ -64,25 +66,27 @@ class Question(models.Model):
     name = models.CharField(max_length=100)
     vopros = models.TextField(default='')
     otvet = models.TextField(default='')
-    question_type = models.CharField(max_length=100, default='')
-    options = models.ManyToManyField('Option')
+    RADIO = 'R'
+    CHECKBOX = 'C'
+    TEXT = 'T'
+    QUESTION_TYPE_CHOICES = (
+        (RADIO, 'radio'),
+        (CHECKBOX, 'checkbox'),
+        (TEXT, 'text'),
+    )
+    question_type = models.CharField(max_length=1, choices=QUESTION_TYPE_CHOICES)
+    OPTIONS_CHOICES = (
+    ('1', 'текст'),
+    ('2', 'Два варианта ответов'),
+    ('3', 'Три варианта ответов'),
+    ('4', 'Четыре варианта ответов'))
+    options = models.CharField(max_length=1, choices=OPTIONS_CHOICES, default='1')
+    test = models.ManyToManyField(Test, related_name='test')
     points = models.IntegerField(default=1)
     def __str__(self):
         return self.name
     
-    def save(self, *args, **kwargs):
-        super(Question, self).save(*args, **kwargs)
-        self.options.clear()
-        for option in self.options.all():
-            self.options.add(option)
-    
-class Option(models.Model):
-    text = models.CharField(max_length=100)
-    is_correct = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.text
-    
 class CourseResult(models.Model):
     user= models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete= models.CASCADE)

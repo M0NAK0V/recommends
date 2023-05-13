@@ -7,14 +7,15 @@
   <form method="post">
     {% csrf_token %}
     {% for question in questions %}
-      <h3>{{ question.text }}</h3>
+      <h3>{{ question.name }}</h3>
+      {{question.vopros}}
 
       {% if question.question_type == "radio" %}
-        {% for option in question.options.all %}
+        {% for option in question.all %}
           <input type="radio" name="answer_{{ question.id }}" value="{{ option.id }}"> {{ option.text }} <br>
         {% endfor %}
       {% elif question.question_type == "checkbox" %}
-        {% for option in question.options.all %}
+        {% for option in question.all %}
           <input type="checkbox" name="answer_{{ question.id }}[]" value="{{ option.id }}"> {{ option.text }} <br>
         {% endfor %}
       {% else %}
