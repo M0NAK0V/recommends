@@ -19,14 +19,3 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.instance.question_type == 'text':
-            del self.fields['options']
-
-        if self.instance.question_type == 'checkbox':
-            self.fields['options'].widget = forms.CheckboxSelectMultiple()
-        else:
-            forms.RadioSelect()

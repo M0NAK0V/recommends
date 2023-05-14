@@ -86,19 +86,8 @@ def course_solve(request, pk):
 
         for question in questions:
             answer = request.POST.get('answer_{}'.format(question.id))
-
-            if question.question_type == "text":
-                if answer.lower() == question.answer.lower():
-                    score += question.points
-            else:
-                answers = request.POST.getlist('answer_{}[]'.format(question.id))
-                correct_tests = question.test.filter(is_correct=True)
-                correct_test_ids = [test.id for test in correct_tests]
-                answers_ids = [int(id) for id in answers]
-
-                if set(correct_test_ids) == set(answers_ids):
-                    score += question.points
-
+            if answer.lower() == question.otvet.lower():
+                score += question.points
         CourseResult.objects.create(user=request.user, course=course, score=score)
 
         return HttpResponseRedirect(reverse('course_solve', args=[course.id]))
