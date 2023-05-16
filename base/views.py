@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -96,8 +96,9 @@ def add_question(request, pk, pk_1):
             question.course = course  # set the course for the question
             question.save()
             form.save_m2m()
-            for question in questions:
-                course.progress += question.points
+            total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
+            course.progress = total_points
+            course.save()
     else:
         form = QuestionForm()
     context = {
@@ -116,8 +117,9 @@ def course_questions(request, pk, pk_1):
     return render(request, 'courses/course_questions.html', {'course': course, 'questions': questions})
 
 @login_required
-def course_solve(request, pk):
-    course = Course.objects.get(id=pk)
+def course_solve(request, pk, pk_1):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
 
     if request.method == 'POST':
@@ -129,7 +131,7 @@ def course_solve(request, pk):
                 score += question.points
         CourseResult.objects.create(user=request.user, course=course, score=score)
 
-        return HttpResponseRedirect(reverse('course_solve', args=[course.id]))
+        return HttpResponseRedirect(reverse('course_solve', args=[bigcourse.id,course.id]))
 
     return render(request, 'courses/course_solve.html', {'course': course, 'questions': questions})
 
