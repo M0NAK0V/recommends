@@ -5,10 +5,10 @@
   {% for bigcourse in bigcourses %}
     <div class="bigcourse-card">
       <h2>{{ bigcourse.name }}</h2>
-      <p>Hosted by: {{ bigcourse.host}}</p>
-      <p>Topic: {{ bigcourse.topic.name }}</p>
+      <p>Хосится: {{ bigcourse.host}}</p>
+      <p>Топик: {{ bigcourse.topic.name }}</p>
       
-      <a href="{% url 'bigcourse' bigcourse.id %}">View BigCourse</a>
+      <a href="{% url 'bigcourse' bigcourse.id %}">Посмотреть полноценный курс</a>
     </div>
   {% endfor %}
 {% endblock %}

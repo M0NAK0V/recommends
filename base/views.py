@@ -16,7 +16,12 @@ from django.urls import reverse
 
 
 
-    
+def results(request, pk):
+    bigcourse = BigCourse.objects.get(id=pk)
+    results = CourseResult.objects.all()
+    context = {'results': results}
+    return render(request, 'courses/results.html', context)
+
 # class AchievementAdd(UserPassesTestMixin,CreateView):
 #     model = UserAchievement
 #     form_class = AchievementAdd
@@ -74,8 +79,11 @@ def create_course(request, pk):
         if form.is_valid():
             course = form.save(commit=False)
             course.save()
+            total_progress = Course.objects.filter(bigcourse=bigcourse).aggregate(Sum('progress'))['progress__sum']
+            bigcourse.progress = total_progress
+            bigcourse.save()
             messages.success(request, 'Course created successfully!')
-            return redirect('courses')
+            return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
     else:
         form = CourseForm()
     context = {
@@ -99,6 +107,7 @@ def add_question(request, pk, pk_1):
             total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
             course.progress = total_points
             course.save()
+            return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
     else:
         form = QuestionForm()
     context = {
@@ -131,7 +140,7 @@ def course_solve(request, pk, pk_1):
                 score += question.points
         CourseResult.objects.create(user=request.user, course=course, score=score)
 
-        return HttpResponseRedirect(reverse('course_solve', args=[bigcourse.id,course.id]))
+        return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
 
     return render(request, 'courses/course_solve.html', {'course': course, 'questions': questions})
 

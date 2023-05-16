@@ -12,7 +12,7 @@
       {% if course.completion_date %}
         <p>Completion Date: {{ course.completion_date }}</p>
       {% endif %}
-      <a href="{% url 'course' course.id %}">View Course</a>
+      <a href="{% url 'course' course.id %}">Посмотреть курс</a>
     </div>
   {% endfor %}
 {% endblock %}

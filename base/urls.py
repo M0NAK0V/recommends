@@ -10,6 +10,7 @@ urlpatterns = [
     path('room/<str:pk>/', views.room, name="room"),
     path('profile/<str:pk>/', views.userProfile, name="user-profile"),
     path('bigcourse/<str:pk>/course/<str:pk_1>/', views.course, name='course'),
+    path('bigcourse/<str:pk>/results/', views.results, name='results'),
     path('courses/', views.courses, name='courses'),
     path('bigcourse/<str:pk>', views.bigcourse, name='bigcourse'),
     path('bigcourses/', views.bigcourses, name='bigcourses'),
@@ -23,7 +24,7 @@ urlpatterns = [
 
     # path('achievements/', AchievementList.as_view(), name='achievements-list'),
     # path('achievements/create/', AchievementCreate.as_view(), name='achievements-create'),
-    # path('achievements/add/', AchievementAdd.as_view(), name='achievements-add'),
+    # path('achievements/add/', AchievementAdd.as_view(), name='achievements-add')
 
     path('bigcourse/<str:pk>/courses/create',views.create_course, name='courses-create'),
     path('bigcourse/<str:pk>/course/<str:pk_1>/add_question/', views.add_question, name='add_question'),
@@ -31,5 +32,6 @@ urlpatterns = [
     path('bigcourse/<str:pk>/course/<int:pk_1>/solve/', views.course_solve, name='course_solve'),
     path('bigcourses/create',views.create_bigcourse, name='bigcourses-create'),
     
+
 
 ]

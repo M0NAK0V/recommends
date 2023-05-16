@@ -3,20 +3,22 @@
 {% block content %}
   <h1>{{ course.name }}</h1>
   <p>{{ course.description }}</p>
-  <h2>Questions</h2>
+  <h2>Вопросы</h2>
   {% for question in questions %}
     <div class="question-card">
       <h3>{{ question.name }}</h3>
       <p>{{ question.vopros }}</p>
-      <p><em>Answer: {{ question.otvet }}</em></p>
+      {% comment %} <p><em>Ответы: {{ question.otvet }}</em></p> {% endcomment %}
     </div>
 
   {% endfor %}
   {% if user.is_authenticated %}
   {% comment %} <a href="{% url 'add_question' pk=bigcourse.id pk_1=course.id %}">Add a Question</a> {% endcomment %}
   {% url 'add_question' pk=bigcourse.id pk_1=course.id as add_question_url %}
-  <a href="{{ add_question_url }}add_question">Add a Question</a>
+  
+  <a href="{{ add_question_url }}add_question">Добавить вопросы</a>
   <a href="{{ add_question_url }}questions">Посмотреть вопросы</a>
+  <a href="{{ add_question_url }}solve">Решить курс</a>
   {% comment %} <li class="nav-item">
     <a class="nav-link" href="{% url 'answers' course.id %}">Задания курса</a>
   </li> {% endcomment %}

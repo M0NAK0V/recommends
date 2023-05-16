@@ -5,14 +5,17 @@
   {% for course in courses %}
     <div class="course-card">
       <h2>{{ course.name }}</h2>
-      <p>Hosted by: {{ course.host}}</p>
+      <p>Хостится: {{ course.host}}</p>
       {% comment %} <p>Topic: {{ course.topic.name }}</p> {% endcomment %}
-      <p>Description: {{ course.description }}</p>
+      <p>Описание: {{ course.description }}</p>
       {% comment %} <p>Participants: {{ course.participants.count }}</p> {% endcomment %}
+      <p>Возможное количетсво очков: {{ course.progress }}</p>
       {% if course.completion_date %}
-        <p>Completion Date: {{ course.completion_date }}</p>
+        <p>Дата выполнения курса: {{ course.completion_date }}</p>
       {% endif %}
-      <a href="{% url 'course' pk=bigcourse.id pk_1=course.id %}">View Course</a>
+      <a href="{% url 'course' pk=bigcourse.id pk_1=course.id %}">Посмотреть курс</a>
     </div>
     {% endfor %}
+    
+    <a href="{% url 'results' bigcourse.id%}">Посмотреть результат</a>
 {% endblock %}

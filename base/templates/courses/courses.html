@@ -8,11 +8,11 @@
       <p>Hosted by: {{ course.host}}</p>
       {% comment %} <p>Topic: {{ course.topic.name }}</p> {% endcomment %}
       <p>Description: {{ course.description }}</p>
-      {% comment %} <p>Participants: {{ course.participants.count }}</p> {% endcomment %}
+      <p>Course : {{ course.participants.count }}</p>
       {% if course.completion_date %}
-        <p>Completion Date: {{ course.completion_date }}</p>
+        <p>Дата выполнения курса: {{ course.completion_date }}</p>
       {% endif %}
-      <a href="{% url 'course' course.id %}">View Course</a>
+      <a href="{% url 'course' course.id %}">Посмотреть курс</a>
     </div>
   {% endfor %}
 {% endblock %}
