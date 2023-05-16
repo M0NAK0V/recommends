@@ -1,7 +1,7 @@
 {% extends 'main.html' %}
 
 {% block content %}
-  <h1>Courses</h1>
+  <h1>{{ bigcourse.name }}</h1>
   {% for course in courses %}
     <div class="course-card">
       <h2>{{ course.name }}</h2>
@@ -12,7 +12,7 @@
       {% if course.completion_date %}
         <p>Completion Date: {{ course.completion_date }}</p>
       {% endif %}
-      <a href="{% url 'course' course.id %}">View Course</a>
+      <a href="{% url 'course' pk=bigcourse.id pk_1=course.id %}">View Course</a>
     </div>
-  {% endfor %}
+    {% endfor %}
 {% endblock %}

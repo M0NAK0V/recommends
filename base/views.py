@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm 
-from .models import Room, Topic, Message, Achievement, Course, Question, CourseResult
-from .forms import RoomForm, CourseForm, QuestionForm
+from .models import Room, Topic, Message, Achievement, Course, Question, CourseResult, BigCourse
+from .forms import RoomForm, CourseForm, QuestionForm, BigCourseForm
 from django.views.generic import ListView
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
@@ -26,12 +26,23 @@ from django.urls import reverse
 #     def test_func(self):
 #         return self.request.user.is_superuser
     
+def bigcourse(request, pk):
+    bigcourse = BigCourse.objects.get(id=pk)
+    courses = Course.objects.filter(bigcourse=bigcourse)
+    context = {'bigcourse': bigcourse, 'courses': courses}
+    return render(request, 'courses/bigcourse.html', context)
 
-def course(request, pk):
-    course = Course.objects.get(id=pk)
+def course(request, pk, pk_1):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
     context = {'course': course, 'questions': questions}
     return render(request, 'courses/course.html', context)
+
+def bigcourses(request):
+    bigcourses = BigCourse.objects.all()
+    context = {'bigcourses': bigcourses}
+    return render(request, 'courses/bigcourses.html', context)
 
 def courses(request):
     courses = Course.objects.all()
@@ -39,7 +50,25 @@ def courses(request):
     return render(request, 'courses/courses.html', context)
 
 @login_required
-def create_course(request):
+def create_bigcourse(request):
+    if request.method == 'POST':
+        form = BigCourseForm(request.POST)
+        if form.is_valid():
+            bigcourse = form.save(commit=False)
+            bigcourse.save()
+            messages.success(request, 'BigCourse created successfully!')
+            return redirect('bigcourses')
+    else:
+        form = BigCourseForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'courses/create_bigcourse.html', context)
+
+@login_required
+def create_course(request, pk):
+    bigcourse = BigCourse.objects.get(id=pk)
+    courses = Course.objects.filter(bigcourse=bigcourse)
     if request.method == 'POST':
         form = CourseForm(request.POST)
         if form.is_valid():
@@ -49,11 +78,17 @@ def create_course(request):
             return redirect('courses')
     else:
         form = CourseForm()
-    return render(request, 'courses/create_course.html', {'form': form})
+    context = {
+        'bigcourse': bigcourse,
+        'form': form,
+    }
+    return render(request, 'courses/create_course.html', context)
 
 @login_required
-def add_question(request, pk):
-    course = Course.objects.get(id=pk)
+def add_question(request, pk, pk_1):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
+    questions = Question.objects.filter(course=course)
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
@@ -61,9 +96,12 @@ def add_question(request, pk):
             question.course = course  # set the course for the question
             question.save()
             form.save_m2m()
+            for question in questions:
+                course.progress += question.points
     else:
         form = QuestionForm()
     context = {
+        'bigcourse': bigcourse,
         'course': course,
         'form': form,
     }
@@ -71,8 +109,9 @@ def add_question(request, pk):
 
 
 @login_required
-def course_questions(request, pk):
-    course = Course.objects.get(id=pk)
+def course_questions(request, pk, pk_1):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
     return render(request, 'courses/course_questions.html', {'course': course, 'questions': questions})
 
@@ -93,31 +132,6 @@ def course_solve(request, pk):
         return HttpResponseRedirect(reverse('course_solve', args=[course.id]))
 
     return render(request, 'courses/course_solve.html', {'course': course, 'questions': questions})
-
-# @login_required
-# def answers(request, pk):
-#     course = Course.objects.get(id=pk)
-#     questions = course.question_set.all()
-#     answers = {}
-#     if request.method == 'POST':
-#         for question in questions:
-#             answer = request.POST.get(f'question_{question.id}')
-#             if answer:
-#                 answers[question.id] = answer.strip()
-#     context = {
-#         'course': course,
-#         'questions': questions,
-#         'answers': answers,
-#     }
-#     if request.method == 'POST':
-#         correct_answers = {}
-#         for question in questions:
-#             correct_answers[question.id] = question.otvet
-#         if answers == correct_answers:
-#             context['success'] = 'Вы успешно решили курс!'
-#         else:
-#             context['error'] = 'Вы допустили ошибку в решении курса'
-#     return render(request, 'courses/answers.html', context)
 
 
     
@@ -178,11 +192,6 @@ def registerPage(request):
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     rooms = Room.objects.filter(
-                                Q(topic__name__icontains=q) |
-                                Q(name__icontains=q)|
-                                Q(description__icontains=q)
-                                )
-    courses = Course.objects.filter(
                                 Q(topic__name__icontains=q) |
                                 Q(name__icontains=q)|
                                 Q(description__icontains=q)

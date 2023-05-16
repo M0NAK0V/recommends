@@ -46,10 +46,18 @@ class Achievement(models.Model):
     def __str__(self):
         return self.name
 
-class Course(models.Model):
+class BigCourse(models.Model):
     host = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null = True)
+    progress = models.IntegerField(default=0)
+    def __str__(self):
+        return self.name
+    
+class Course(models.Model):
+    bigcourse = models.ForeignKey(BigCourse, on_delete= models.CASCADE, null = True)
+    host = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
+    name = models.CharField(max_length=100)
     description = models.TextField(max_length=255, default='')
     created_date = models.DateField(auto_now_add=True)
     completion_date = models.DateField(null=True, blank=True)
@@ -60,6 +68,7 @@ class Course(models.Model):
 
 class Question(models.Model):
     user= models.ForeignKey(User, on_delete=models.CASCADE)
+    bigcourse = models.ForeignKey(BigCourse, on_delete= models.CASCADE, null = True)
     course = models.ForeignKey(Course, on_delete= models.CASCADE)
     name = models.CharField(max_length=100)
     vopros = models.TextField(default='')

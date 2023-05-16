@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <h1>BIGCourses</h1>
+  {% for bigcourse in bigcourses %}
+    <div class="bigcourse-card">
+      <h2>{{ bigcourse.name }}</h2>
+      <p>Hosted by: {{ bigcourse.host}}</p>
+      <p>Topic: {{ bigcourse.topic.name }}</p>
+      
+      <a href="{% url 'bigcourse' bigcourse.id %}">View BigCourse</a>
+    </div>
+  {% endfor %}
+{% endblock %}

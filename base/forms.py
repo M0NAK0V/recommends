@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Room, Achievement, Course, Question
+from .models import Room, Achievement, Course, Question, BigCourse
 
 class RoomForm(ModelForm):
     class Meta:
@@ -8,6 +8,12 @@ class RoomForm(ModelForm):
         fields = '__all__'
         exclude = ['host','participants']
 
+
+class BigCourseForm(ModelForm):
+    class Meta:
+        model = BigCourse
+        fields = '__all__'
+        exclude = ['progress']
 
 class CourseForm(ModelForm):
     class Meta:

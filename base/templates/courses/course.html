@@ -13,8 +13,10 @@
 
   {% endfor %}
   {% if user.is_authenticated %}
-  <a href="{% url 'add_question' course.id %}">Add a Question</a>
-  <a href="{% url 'course_questions' course.id %}">View Questions</a>
+  {% comment %} <a href="{% url 'add_question' pk=bigcourse.id pk_1=course.id %}">Add a Question</a> {% endcomment %}
+  {% url 'add_question' pk=bigcourse.id pk_1=course.id as add_question_url %}
+  <a href="{{ add_question_url }}add_question">Add a Question</a>
+  <a href="{{ add_question_url }}questions">Посмотреть вопросы</a>
   {% comment %} <li class="nav-item">
     <a class="nav-link" href="{% url 'answers' course.id %}">Задания курса</a>
   </li> {% endcomment %}
