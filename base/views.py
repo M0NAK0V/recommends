@@ -117,6 +117,58 @@ def add_question(request, pk, pk_1):
     }
     return render(request, 'courses/add_question.html', context)
 
+@login_required
+def update_question(request, pk, pk_1, pk_2):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
+    questions = Question.objects.filter(course=course)
+    question = Question.objects.get(id=pk_2)
+    form = QuestionForm(instance=question)
+    if request.user != question.user:
+        return HttpResponse('ухади')
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.course = course  # set the course for the question
+            question.save()
+            form.save_m2m()
+            total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
+            course.progress = total_points
+            course.save()
+            return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
+    else:
+        form = QuestionForm()
+    context = {
+        'bigcourse': bigcourse,
+        'course': course,
+        'form': form,
+    }
+    return render(request, 'courses/update_question.html', context)
+
+@login_required
+def delete_question(request, pk, pk_1, pk_2):
+    bigcourse = BigCourse.objects.get(id=pk)
+    course = Course.objects.get(id=pk_1)
+    questions = Question.objects.filter(course=course)
+    question = Question.objects.get(id=pk_2)
+    if request.user != question.user:
+        return HttpResponse('ухади')
+    if request.method == 'POST':
+        question.delete()
+        total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
+        course.progress = total_points
+        course.save()
+        return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
+    else:
+        form = QuestionForm()
+    context = {
+        'bigcourse': bigcourse,
+        'course': course,
+        'form': form,
+    }
+    return render(request, 'base/delete.html',{'obj':question})
+
 
 @login_required
 def course_questions(request, pk, pk_1):

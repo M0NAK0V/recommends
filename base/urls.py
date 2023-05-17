@@ -28,6 +28,8 @@ urlpatterns = [
 
     path('bigcourse/<str:pk>/courses/create',views.create_course, name='courses-create'),
     path('bigcourse/<str:pk>/course/<str:pk_1>/add_question/', views.add_question, name='add_question'),
+    path('bigcourse/<str:pk>/course/<str:pk_1>/update_question/<str:pk_2>/', views.update_question, name='update_question'),
+    path('bigcourse/<str:pk>/course/<str:pk_1>/delete_question/<str:pk_2>/', views.delete_question, name='delete_question'),
     path('bigcourse/<str:pk>/course/<int:pk_1>/questions/', views.course_questions, name='course_questions'),
     path('bigcourse/<str:pk>/course/<int:pk_1>/solve/', views.course_solve, name='course_solve'),
     path('bigcourses/create',views.create_bigcourse, name='bigcourses-create'),
