@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Max
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -30,7 +30,16 @@ def results(request, pk):
 
 #     def test_func(self):
 #         return self.request.user.is_superuser
-    
+
+def count_all_courses(course: Course) -> int:
+    big_course = BigCourse.objects.filter(course=course).first()
+    if big_course:
+        big_course_id = bigcourse.id
+        courses = Course.objects.filter(big_course_id=big_course_id)
+        bigcourse.course_count = courses.count()
+        bigcourse.save()
+        print(bigcourse.course_count)
+
 def bigcourse(request, pk):
     bigcourse = BigCourse.objects.get(id=pk)
     courses = Course.objects.filter(bigcourse=bigcourse)
@@ -41,6 +50,8 @@ def course(request, pk, pk_1):
     bigcourse = BigCourse.objects.get(id=pk)
     course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
+    if BigCourse.objects.filter(course=course).first().id != bigcourse.id:
+        return HttpResponse('ухади')
     context = {'course': course, 'questions': questions}
     return render(request, 'courses/course.html', context)
 
@@ -80,7 +91,10 @@ def create_course(request, pk):
             course = form.save(commit=False)
             course.save()
             total_progress = Course.objects.filter(bigcourse=bigcourse).aggregate(Sum('progress'))['progress__sum']
-            bigcourse.progress = total_progress
+            bigcourse.full_progress = total_progress
+            bigcourse.min_progress = total_progress//4*3
+            crscount = Course.objects.filter(bigcourse=bigcourse)
+            bigcourse.course_count = crscount.count()
             bigcourse.save()
             messages.success(request, 'Course created successfully!')
             return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
@@ -106,6 +120,7 @@ def add_question(request, pk, pk_1):
             form.save_m2m()
             total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
             course.progress = total_points
+            course.min_progress = total_points//4*3
             course.save()
             return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
     else:
@@ -135,6 +150,7 @@ def update_question(request, pk, pk_1, pk_2):
             form.save_m2m()
             total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
             course.progress = total_points
+            course.min_progress = total_points//4*3
             course.save()
             return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
     else:
@@ -158,6 +174,7 @@ def delete_question(request, pk, pk_1, pk_2):
         question.delete()
         total_points = Question.objects.filter(course=course).aggregate(Sum('points'))['points__sum']
         course.progress = total_points
+        course.min_progress = total_points//4*3
         course.save()
         return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
     else:
@@ -182,7 +199,13 @@ def course_solve(request, pk, pk_1):
     bigcourse = BigCourse.objects.get(id=pk)
     course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
-
+    user_result = CourseResult.objects.filter(course=course, user=request.user).last()
+    if not user_result and course.order != 1:
+        prev_course = Course.objects.get(bigcourse=bigcourse, order=course.order-1)
+        prev_result = CourseResult.objects.filter(course=prev_course, user=request.user).last()
+        if not prev_result or prev_result.score < prev_course.min_progress:
+            message = f'Для доступа к курсу {course.name} необходимо пройти предыдущие курсы.'
+            return HttpResponseRedirect(reverse('course', args=[pk, prev_course.id]) + f'?message={message}')
     if request.method == 'POST':
         score = 0
 
@@ -191,9 +214,25 @@ def course_solve(request, pk, pk_1):
             if answer.lower() == question.otvet.lower():
                 score += question.points
         CourseResult.objects.create(user=request.user, course=course, score=score)
-
+        if score >= course.min_progress:
+            message = f'Поздравляем! Вы успешно прошли курс "{course.name}".'
+            if course.order < bigcourse.course_count:
+                next_course = Course.objects.get(bigcourse=bigcourse, order=course.order+1)
+                next_result = CourseResult.objects.filter(course=next_course, user=request.user).last()
+                if not next_result:
+                    message += f' Для получения доступа к следующим курсам пройдите курс "{next_course.name}".'
+                    return HttpResponseRedirect(reverse('course', args=[pk, next_course.id]) + f'?message={message}')
+        else:
+            message = f'Вы не прошли курс "{course.name}". Попробуйте еще раз.'
+        return HttpResponseRedirect(reverse('course', args=[pk, pk_1]) + f'?message={message}')
+    # else:
+    #     if user_result and user_result.score < course.min_progress:
+    #         message = f'Прогресс недостаточный для доступа к курсу "{course.name}".'
+    #         return HttpResponseRedirect(reverse('course', args=[pk, pk_1]) + f'?message={message}')
+    #     else:
+    #         # Show course details and questions
+    #         pass
         return HttpResponseRedirect(reverse('course', args=[bigcourse.id,course.id]))
-
     return render(request, 'courses/course_solve.html', {'course': course, 'questions': questions})
 
 

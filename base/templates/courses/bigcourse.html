@@ -9,7 +9,8 @@
       {% comment %} <p>Topic: {{ course.topic.name }}</p> {% endcomment %}
       <p>Описание: {{ course.description }}</p>
       {% comment %} <p>Participants: {{ course.participants.count }}</p> {% endcomment %}
-      <p>Возможное количетсво очков: {{ course.progress }}</p>
+      <p>Возможное количество очков: {{ course.progress }}</p>
+      <p>Возможное количество очков: {{ course.min_progress }}</p>
       {% if course.completion_date %}
         <p>Дата выполнения курса: {{ course.completion_date }}</p>
       {% endif %}

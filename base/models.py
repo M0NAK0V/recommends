@@ -50,7 +50,9 @@ class BigCourse(models.Model):
     host = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null = True)
-    progress = models.IntegerField(default=0)
+    min_progress = models.IntegerField(default=0) 
+    full_progress = models.IntegerField(default=0)
+    course_count = models.IntegerField(default=0)
     def __str__(self):
         return self.name
     
@@ -61,7 +63,9 @@ class Course(models.Model):
     description = models.TextField(max_length=255, default='')
     created_date = models.DateField(auto_now_add=True)
     completion_date = models.DateField(null=True, blank=True)
-    progress = models.IntegerField(default=0) 
+    min_progress = models.IntegerField(default=0) 
+    progress = models.IntegerField(default=0)
+    order = models.IntegerField(default=1)
     def __str__(self):
         return self.name
 
