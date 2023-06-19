@@ -8,7 +8,8 @@
       <p>Хосится: {{ bigcourse.host}}</p>
       <p>Топик: {{ bigcourse.topic.name }}</p>
       
-      <a href="{% url 'bigcourse' bigcourse.id %}">Посмотреть полноценный курс</a>
+      <a href="{% url 'bigcourse' bigcourse.id %}">Посмотреть поток</a>
     </div>
   {% endfor %}
+  <a href="{% url 'bigcourses-create'%}">Добавить поток</a>
 {% endblock %}

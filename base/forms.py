@@ -13,15 +13,16 @@ class BigCourseForm(ModelForm):
     class Meta:
         model = BigCourse
         fields = '__all__'
-        exclude = ['full_progress','min_progress']
+        exclude = ['host','full_progress','min_progress','course_count']
 
 class CourseForm(ModelForm):
     class Meta:
         model = Course
         fields = '__all__'
-        exclude = ['completion_date','progress', 'min_progress']
+        exclude = ['host','completion_date','progress', 'min_progress', 'bigcourse']
 
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = '__all__'
+        exclude = ['user','bigcourse','course']

@@ -15,9 +15,11 @@
   {% if user.is_authenticated %}
   {% comment %} <a href="{% url 'add_question' pk=bigcourse.id pk_1=course.id %}">Add a Question</a> {% endcomment %}
   {% url 'add_question' pk=bigcourse.id pk_1=course.id as add_question_url %}
-  
+
+  {%if request.user == course.host%}
   <a href="{{ add_question_url }}add_question">Добавить вопросы</a>
-  <a href="{{ add_question_url }}questions">Посмотреть вопросы</a>
+  <a href="{{ add_question_url }}questions">Посмотреть ответы</a>
+  {%endif%}
   <a href="{{ add_question_url }}solve">Решить курс</a>
   {% comment %} <li class="nav-item">
     <a class="nav-link" href="{% url 'answers' course.id %}">Задания курса</a>

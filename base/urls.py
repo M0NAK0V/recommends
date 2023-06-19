@@ -34,6 +34,4 @@ urlpatterns = [
     path('bigcourse/<str:pk>/course/<int:pk_1>/solve/', views.course_solve, name='course_solve'),
     path('bigcourses/create',views.create_bigcourse, name='bigcourses-create'),
     
-
-
 ]

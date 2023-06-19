@@ -71,6 +71,7 @@ def create_bigcourse(request):
         form = BigCourseForm(request.POST)
         if form.is_valid():
             bigcourse = form.save(commit=False)
+            bigcourse.host = request.user
             bigcourse.save()
             messages.success(request, 'BigCourse created successfully!')
             return redirect('bigcourses')
@@ -85,10 +86,14 @@ def create_bigcourse(request):
 def create_course(request, pk):
     bigcourse = BigCourse.objects.get(id=pk)
     courses = Course.objects.filter(bigcourse=bigcourse)
+    if request.user != bigcourse.host:
+        return HttpResponse('ухади')
     if request.method == 'POST':
         form = CourseForm(request.POST)
         if form.is_valid():
             course = form.save(commit=False)
+            course.host = request.user
+            course.bigcourse = bigcourse
             course.save()
             total_progress = Course.objects.filter(bigcourse=bigcourse).aggregate(Sum('progress'))['progress__sum']
             bigcourse.full_progress = total_progress
@@ -111,10 +116,14 @@ def add_question(request, pk, pk_1):
     bigcourse = BigCourse.objects.get(id=pk)
     course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
+    if request.user != course.host:
+        return HttpResponse('ухади')
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
             question = form.save(commit=False)
+            question.user = request.user
+            question.bigcourse = bigcourse
             question.course = course  # set the course for the question
             question.save()
             form.save_m2m()
@@ -192,6 +201,8 @@ def course_questions(request, pk, pk_1):
     bigcourse = BigCourse.objects.get(id=pk)
     course = Course.objects.get(id=pk_1)
     questions = Question.objects.filter(course=course)
+    if request.user != course.host:
+        return HttpResponse('ухади')
     return render(request, 'courses/course_questions.html', {'course': course, 'questions': questions})
 
 @login_required
